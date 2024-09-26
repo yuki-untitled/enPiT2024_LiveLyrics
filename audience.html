@@ -32,13 +32,26 @@
           setInterval(() => {
             if (currentLine < lines.length) {
               // 既に表示された内容に追加する
-              document.getElementById('lyricsdata').innerHTML = lines[currentLine] + '<br>';
+              //一文字ずつに分割
+              document.getElementById('lyricsdata').innerHTML = '';
+              let nowChar=0;
+              const words = lines[currentLine].split('');
+              setInterval(()=>{
+                 if (nowChar < words.length) {
+                   document.getElementById('lyricsdata').innerHTML += words[nowChar];
+                   nowChar++;
+                
+              }},100);
+              
+              
+          
+
               currentLine++;
             } else {
               // 全ての行が表示されたら処理を停止
               clearInterval();
             }
-          }, 1000);  // 5000ミリ秒 = 5秒
+          }, 3000);  // 5000ミリ秒 = 5秒
         })
         .catch(error => {
           console.error('エラー:', error);
