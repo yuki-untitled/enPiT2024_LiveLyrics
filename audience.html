@@ -1,66 +1,65 @@
 <center>
-  <h1>観客用ページ</h1>
-  
+  <!doctype html>
+  <html lang="ja">
+    <head>
+      <meta charset="UTF-8" />
+      <title>一文ずつ表示する</title>
+    </head>
+    <body>
+      <div id="lyricsdata">読み込み中...</div>
 
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <title>一文ずつ表示する</title>
-  </head>
-  <body>
-    <div id="lyricsdata">読み込み中...</div>
+      <script>
+        const filePath = "/LyricsData/ito.txt";
+        let lines = []; // テキストを行ごとに格納する配列
+        let currentLine = 0;
 
-    <script>
-      const filePath = '/LyricsData/ito.txt';
-      let lines = [];  // テキストを行ごとに格納する配列
-      let currentLine = 0;
-
-      // テキストファイルを読み込む
-      fetch(filePath)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('ファイル読み込みエラー');
-          }
-          return response.text();
-        })
-        .then(data => {
-          // 改行コードでテキストを分割し、配列に格納
-          lines = data.split('\n');
-
-          // 5秒ごとに一文ずつ表示する
-          setInterval(() => {
-            if (currentLine < lines.length) {
-              // 既に表示された内容に追加する
-              //一文字ずつに分割
-              document.getElementById('lyricsdata').innerHTML = '';
-              let nowChar=0;
-              const words = lines[currentLine].split('');
-              setInterval(()=>{
-                 if (nowChar < words.length) {
-                   document.getElementById('lyricsdata').innerHTML += words[nowChar];
-                   nowChar++;
-                
-              }},100);
-              
-              
-          
-
-              currentLine++;
-            } else {
-              // 全ての行が表示されたら処理を停止
-              clearInterval();
+        // テキストファイルを読み込む
+        fetch(filePath)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("ファイル読み込みエラー");
             }
-          }, 3000);  // 5000ミリ秒 = 5秒
-        })
-        .catch(error => {
-          console.error('エラー:', error);
-          document.getElementById('lyricsdata').textContent = 'ファイルを読み込めませんでした。';
-        });
-    </script>
-  </body>
-</html>
+            return response.text();
+          })
+          .then((data) => {
+            // 改行コードでテキストを分割し、配列に格納
+            lines = data.split("\n");
 
+            // 5秒ごとに一文ずつ表示する
+            setInterval(() => {
+              if (currentLine < lines.length) {
+                // 既に表示された内容に追加する
+                //一文字ずつに分割
+                document.getElementById("lyricsdata").innerHTML = "";
+                let nowChar = 0;
+                const words = lines[currentLine].split("");
+                setInterval(() => {
+                  if (nowChar < words.length) {
+                    document.getElementById("lyricsdata").innerHTML +=
+                      words[nowChar];
+                    nowChar++;
+                  }
+                }, 100);
 
-  <br><a href="/">トップへ戻る</a></br>
+                currentLine++;
+              } else {
+                // 全ての行が表示されたら処理を停止
+                clearInterval();
+              }
+            }, 3000); // 3000ミリ秒 = 3秒
+          })
+          .catch((error) => {
+            console.error("エラー:", error);
+            document.getElementById("lyricsdata").textContent =
+              "ファイルを読み込めませんでした。";
+          });
+      </script>
+    </body>
+  </html>
 </center>
+<style>
+  .lyricsdata{
+    font-size :30px;
+  }
+  </style>
+  
