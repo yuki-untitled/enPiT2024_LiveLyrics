@@ -4,6 +4,39 @@
     <head>
       <meta charset="UTF-8" />
       <title>一文ずつ表示する</title>
+      <style>
+        body {
+          background-color: #000; /* 背景色を黒に */
+          color: white; /* テキストの色を白に設定 */
+          text-align: center; /* 中央揃え */
+        }
+
+        #lyricsdata {
+          font-size: 30px; /* フォントサイズを設定 */
+          white-space: nowrap; /* テキストが折り返されないように */
+          overflow: hidden; /* はみ出た部分は隠す */
+          width: 100%; /* 幅を100%に設定 */
+          position: relative; /* アニメーションのために相対位置を指定 */
+        }
+
+        .letter {
+          display: inline-block; /* 各文字をブロック要素として扱う */
+          opacity: 0; /* 初期状態は透明 */
+          transform: translateX(-20px); /* 左から出現するように */
+          animation: fadeIn 0.5s forwards; /* フェードインアニメーション */
+        }
+
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      </style>
     </head>
     <body>
       <div id="lyricsdata">読み込み中...</div>
@@ -25,21 +58,27 @@
             // 改行コードでテキストを分割し、配列に格納
             lines = data.split("\n");
 
-            // 5秒ごとに一文ずつ表示する
+            // 3秒ごとに一文ずつ表示する
             setInterval(() => {
               if (currentLine < lines.length) {
                 // 既に表示された内容に追加する
-                //一文字ずつに分割
-                document.getElementById("lyricsdata").innerHTML = "";
+                document.getElementById("lyricsdata").innerHTML = ""; // 内容をクリア
                 let nowChar = 0;
                 const words = lines[currentLine].split("");
-                setInterval(() => {
-                  if (nowChar < words.length) {
-                    document.getElementById("lyricsdata").innerHTML +=
-                      words[nowChar];
-                    nowChar++;
-                  }
-                }, 100);
+
+                // 各文字にアニメーションを適用
+                words.forEach((char) => {
+                  const span = document.createElement("span");
+                  span.classList.add("letter"); // クラスを追加
+                  span.textContent = char;
+                  document.getElementById("lyricsdata").appendChild(span);
+
+                  // アニメーションの遅延を設定
+                  setTimeout(() => {
+                    span.style.opacity = 1; // フェードインさせる
+                  }, nowChar * 100); // 文字ごとに遅延を設ける
+                  nowChar++;
+                });
 
                 currentLine++;
               } else {
@@ -57,8 +96,3 @@
     </body>
   </html>
 </center>
-<style>
-  #lyricsdata {
-    font-size: 30px;
-  }
-</style>
