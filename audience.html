@@ -1,19 +1,40 @@
-<h1>観客用ページ</h1>
-<a href="/">トップへ戻る</a>
+<center>
+  <h1>観客用ページ</h1>
 
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
-    <title>Object Test</title>
-  </head>
-  <body>
-    <object
-      data="/LyricsData/ito.txt"
-      type="text/plain"
-      width="100%"
-      height="100%"
-    ></object>
-    <p></p>
-  </body>
-</html>
+  <!doctype html>
+  <html lang="ja">
+    <head>
+      <meta charset="UTF-8" />
+      <title>テキストファイル表示</title>
+    </head>
+    <body>
+      <div id="lyricsdata">読み込み中...</div>
+
+      <script>
+        const filePath = "/LyricsData/ito.txt";
+
+        // fetchを使ってテキストファイルを取得
+        fetch(filePath)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("ファイル読み込みエラー");
+            }
+            return response.text();
+          })
+          .then((data) => {
+            // 改行コードをHTMLの<br>タグに置き換える
+            const formattedData = data.replace(/\n/g, "<br>");
+            document.getElementById("lyricsdata").innerHTML = formattedData;
+          })
+          .catch((error) => {
+            console.error("エラー:", error);
+            document.getElementById("lyricsdata").textContent =
+              "ファイルを読み込めませんでした。";
+          });
+        const lyricsArray = formattedData.split("<br>");
+      </script>
+    </body>
+  </html>
+
+  <br><a href="/">トップへ戻る</a></br>
+</center>
