@@ -6,7 +6,6 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-const WebSocket = require("ws");
 
 // "/"にアクセスがあったらindex.htmlを返却
 app.use("/", express.static(__dirname + "/"));
