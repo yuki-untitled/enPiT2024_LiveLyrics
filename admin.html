@@ -1,59 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
 <head>
-  <script src="rubi.js"></script>
-    
+  <meta charset="UTF-8">
+  <title>運営ページ</title>
+  <style>
+    .highlight {
+      color: red;
+      /* 表示された行は赤色にする */
+    }
+  </style>
 </head>
 
+<body>
+  <h1>運営側サイト</h1>
+  <div id="lyrics">
+    <pre id="lyricsText">読み込み中...</pre>
+  </div>
+  <button id="nextLineButton">次の文を表示</button>
 
-<center><h1>運営用ページ</h1></center>
-    <a href="/">トップへ戻る</a>
-</ul>
+  <script>
+    const filePath = '/LyricsData/ito.txt'; // 歌詞のテキストファイル
+    let lyricsArray = [];
+    let currentLineIndex = 0;
 
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8" />
-    <meta charset="UTF-8" />
-    <title>歌詞表示</title>
-    
-    <style>
-      /* 横並びにするためのCSS */
-      .container {
-        display: flex;
-        justify-content: space-between;
-        gap: 20px;
+    // WebSocket接続
+    const socket = new WebSocket('ws://localhost:8080');
+
+    // 歌詞データの読み込み
+    fetch(filePath)
+      .then(response => response.text())
+      .then(data => {
+        lyricsArray = data.split('\n'); // 改行で歌詞を分割
+        displayLyrics(); // 歌詞を表示
+      });
+
+    // 歌詞を表示する関数
+    function displayLyrics() {
+      const lyricsText = document.getElementById('lyricsText');
+      lyricsText.innerHTML = lyricsArray.map((line, index) => {
+        if (index === currentLineIndex) {
+          return `<span class="highlight">${line}</span>`; // 現在の行は赤色
+        }
+        return line;
+      }).join('<br>'); // 改行をHTMLに置き換え
+    }
+
+    // 次の文を送信し、表示する関数
+    document.getElementById('nextLineButton').addEventListener('click', () => {
+      if (currentLineIndex < lyricsArray.length) {
+        // WebSocket経由で次の文を送信
+        socket.send(lyricsArray[currentLineIndex]);
+
+        // 表示されている歌詞の行を更新
+        displayLyrics();
+        currentLineIndex++;
       }
+    });
+  </script>
+</body>
 
-      /* 各オブジェクトのスタイルを設定 */
-      .lyrics, .hiragana {
-        width: 50%;
-      }
-
-      /* Objectのサイズを固定 */
-      object {
-        width: 100%;
-        height: 500px; /* 必要に応じて調整可能 */
-        border: 1px solid #ccc;
-      }
-    </style>
-  </head>
-  <body>  
-    <center><h2>歌詞の原文とひらがな</h2></center>
-
-    <!-- 原文とひらがなを横並びにするコンテナ -->
-    <div class="container">
-      <!-- 歌詞の原文 -->
-      <div class="lyrics">
-        <center><h3>歌詞の原文</h3></center>
-        <object data="/LyricsData/ito.txt" type="text/plain"></object>
-      </div>
-
-      <!-- ひらがな -->
-      <div class="hiragana">
-        <center><h3>歌詞から抽出したひらがな</h3></center>
-        <object data="/LyricsData/hiragana.txt" type="text/plain"></object>
-      </div>
-    </div>
-  </body>
 </html>
-
-
