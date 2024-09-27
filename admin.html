@@ -5,56 +5,139 @@
   <meta charset="UTF-8">
   <title>運営ページ</title>
   <style>
-    .highlight {
-      color: red;
-      /* 表示された行は赤色にする */
+    body {
+      background-color: black;
+      /* 背景を黒に */
+      color: white;
+      /* 文字色を白に */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* 中央に配置 */
+      justify-content: center;
+      /* 中央に配置 */
+      height: 100vh;
+      /* ビューポート全体を使用 */
+      margin: 0;
+      /* デフォルトのマージンをリセット */
+      font-family: Arial, sans-serif;
+      /* フォントを設定 */
+    }
+
+    .fade {
+      opacity: 0;
+      transition: opacity 0.5s ease-in;
+      /* フェードインのトランジション */
+    }
+
+    .visible {
+      opacity: 1;
+      /* 完全に表示 */
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      /* マージンをリセット */
+      font-size: 3em;
+      /* タイトルのフォントサイズ */
+    }
+
+    #lyricsText {
+      font-size: 6em;
+      /* 歌詞のフォントサイズを大きく設定 */
+      text-align: center;
+      /* 中央揃え */
+      max-width: 90%;
+      /* 最大幅を90%に設定 */
+      word-wrap: break-word;
+      /* 単語の折り返しを許可 */
+      margin-top: 20px;
+      /* 上部に余白を追加 */
+      text-shadow:
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
+      /* アウトラインの効果 */
     }
   </style>
 </head>
 
 <body>
-  <h1>運営側サイト</h1>
+  <h1 id="title" class="fade">タイトルを表示中...</h1> <!-- 1行目：タイトル -->
+  <h2 id="subtitle" class="fade">サブタイトルを表示中...</h2> <!-- 2行目：タイトルの下に固定 -->
   <div id="lyrics">
-    <pre id="lyricsText">読み込み中...</pre>
+    <pre id="lyricsText" class="fade">読み込み中...</pre>
   </div>
-  <button id="nextLineButton">次の文を表示</button>
 
   <script>
     const filePath = '/LyricsData/ito.txt'; // 歌詞のテキストファイル
     let lyricsArray = [];
     let currentLineIndex = 0;
 
-    // WebSocket接続
-    const socket = new WebSocket('ws://localhost:8080');
-
     // 歌詞データの読み込み
     fetch(filePath)
       .then(response => response.text())
       .then(data => {
         lyricsArray = data.split('\n'); // 改行で歌詞を分割
-        displayLyrics(); // 歌詞を表示
+
+        // 最初の行をタイトルとして表示
+        document.getElementById('title').textContent = lyricsArray[0];
+
+        // 2行目をサブタイトルとして表示
+        document.getElementById('subtitle').textContent = lyricsArray[1];
+
+        // 最初の2行を除いた歌詞部分を保持
+        lyricsArray = lyricsArray.slice(2);
+
+        // フェードイン
+        fadeInTitleAndSubtitle();
+
+        displayCurrentLine(); // 最初の行を表示
       });
 
-    // 歌詞を表示する関数
-    function displayLyrics() {
-      const lyricsText = document.getElementById('lyricsText');
-      lyricsText.innerHTML = lyricsArray.map((line, index) => {
-        if (index === currentLineIndex) {
-          return `<span class="highlight">${line}</span>`; // 現在の行は赤色
-        }
-        return line;
-      }).join('<br>'); // 改行をHTMLに置き換え
+    // タイトルとサブタイトルをフェードインしてそのままフェードアウトさせる関数
+    function fadeInTitleAndSubtitle() {
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+
+      // タイトルとサブタイトルを同時にフェードイン
+      title.classList.add('visible');
+      subtitle.classList.add('visible');
+
+      // 3秒後にタイトルとサブタイトルを同時にフェードアウト
+      setTimeout(() => {
+        title.classList.remove('visible'); // タイトルをフェードアウト
+        subtitle.classList.remove('visible'); // サブタイトルをフェードアウト
+      }, 3000); // フェードアウトの時間
     }
 
-    // 次の文を送信し、表示する関数
-    document.getElementById('nextLineButton').addEventListener('click', () => {
-      if (currentLineIndex < lyricsArray.length) {
-        // WebSocket経由で次の文を送信
-        socket.send(lyricsArray[currentLineIndex]);
+    // 現在の行を表示する関数
+    function displayCurrentLine() {
+      const lyricsText = document.getElementById('lyricsText');
+      const currentLine = lyricsArray[currentLineIndex];
 
-        // 表示されている歌詞の行を更新
-        displayLyrics();
-        currentLineIndex++;
+      // フェードインアニメーション
+      lyricsText.classList.remove('visible'); // まず非表示にして
+      setTimeout(() => {
+        lyricsText.innerHTML = currentLine; // 新しい行を直接表示
+        lyricsText.classList.add('visible'); // フェードイン
+      }, 500); // 500ミリ秒後に新しい行を表示
+    }
+
+    // キー操作で歌詞を移動
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') { // 下矢印キー
+        if (currentLineIndex < lyricsArray.length - 1) {
+          currentLineIndex++;
+          displayCurrentLine(); // 次の行を表示
+        }
+      } else if (event.key === 'ArrowUp') { // 上矢印キー
+        if (currentLineIndex > 0) {
+          currentLineIndex--;
+          displayCurrentLine(); // 前の行を表示
+        }
       }
     });
   </script>
