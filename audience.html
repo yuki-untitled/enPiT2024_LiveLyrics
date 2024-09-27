@@ -1,98 +1,84 @@
-<center>
-  <!doctype html>
-  <html lang="ja">
-    <head>
-      <meta charset="UTF-8" />
-      <title>一文ずつ表示する</title>
-      <style>
-        body {
-          background-color: #000; /* 背景色を黒に */
-          color: white; /* テキストの色を白に設定 */
-          text-align: center; /* 中央揃え */
-        }
+<!DOCTYPE html>
+<html lang="ja">
 
-        #lyricsdata {
-          font-size: 30px; /* フォントサイズを設定 */
-          white-space: nowrap; /* テキストが折り返されないように */
-          overflow: hidden; /* はみ出た部分は隠す */
-          width: 100%; /* 幅を100%に設定 */
-          position: relative; /* アニメーションのために相対位置を指定 */
-        }
+<head>
+  <meta charset="UTF-8" />
+  <title>観客ページ</title>
+  <style>
+    body {
+      background-color: #000;
+      /* 背景を黒に */
+      color: white;
+      /* 文字色を白に */
+      font-size: 24px;
+      /* 文字サイズを設定 */
+      text-align: center;
+      /* 中央揃え */
+    }
 
-        .letter {
-          display: inline-block; /* 各文字をブロック要素として扱う */
-          opacity: 0; /* 初期状態は透明 */
-          transform: translateX(-20px); /* 左から出現するように */
-          animation: fadeIn 0.5s forwards; /* フェードインアニメーション */
-        }
+    #lyricsText {
+      font-size: 28px;
+      /* フォントサイズを設定 */
+      white-space: pre-wrap;
+      /* 改行を保持 */
+    }
 
-        @keyframes fadeIn {
-          0% {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div id="lyricsdata">読み込み中...</div>
+    .letter {
+      display: inline-block;
+      opacity: 0;
+      /* 初期状態は透明 */
+      transform: translateY(20px);
+      /* 下からフェードイン */
+      animation: fadeIn 0.5s forwards;
+    }
 
-      <script>
-        const filePath = "/LyricsData/ito.txt";
-        let lines = []; // テキストを行ごとに格納する配列
-        let currentLine = 0;
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
 
-        // テキストファイルを読み込む
-        fetch(filePath)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("ファイル読み込みエラー");
-            }
-            return response.text();
-          })
-          .then((data) => {
-            // 改行コードでテキストを分割し、配列に格納
-            lines = data.split("\n");
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
 
-            // 3秒ごとに一文ずつ表示する
-            setInterval(() => {
-              if (currentLine < lines.length) {
-                // 既に表示された内容に追加する
-                document.getElementById("lyricsdata").innerHTML = ""; // 内容をクリア
-                let nowChar = 0;
-                const words = lines[currentLine].split("");
+<body>
+  <h1>観客側サイト</h1>
+  <div id="lyrics">
+    <pre id="lyricsText">歌詞が表示されます...</pre>
+  </div>
 
-                // 各文字にアニメーションを適用
-                words.forEach((char) => {
-                  const span = document.createElement("span");
-                  span.classList.add("letter"); // クラスを追加
-                  span.textContent = char;
-                  document.getElementById("lyricsdata").appendChild(span);
+  <script>
+    // WebSocket接続
+    const socket = new WebSocket("ws://localhost:8080");
 
-                  // アニメーションの遅延を設定
-                  setTimeout(() => {
-                    span.style.opacity = 1; // フェードインさせる
-                  }, nowChar * 100); // 文字ごとに遅延を設ける
-                  nowChar++;
-                });
+    // WebSocketからメッセージを受け取る
+    socket.addEventListener("message", (event) => {
+      const lyricsText = document.getElementById("lyricsText");
+      lyricsText.innerHTML = ""; // 表示をクリア
 
-                currentLine++;
-              } else {
-                // 全ての行が表示されたら処理を停止
-                clearInterval();
-              }
-            }, 3000); // 3000ミリ秒 = 3秒
-          })
-          .catch((error) => {
-            console.error("エラー:", error);
-            document.getElementById("lyricsdata").textContent =
-              "ファイルを読み込めませんでした。";
-          });
-      </script>
-    </body>
-  </html>
-</center>
+      const line = event.data.split(""); // 一文字ずつ分割
+      let nowChar = 0;
+
+      // 各文字にアニメーションを適用して追加
+      line.forEach((char) => {
+        const span = document.createElement("span");
+        span.classList.add("letter"); // アニメーションを適用
+        span.textContent = char;
+        lyricsText.appendChild(span);
+
+        // 文字ごとにフェードインの遅延を設定
+        setTimeout(() => {
+          span.style.opacity = 1;
+        }, nowChar * 100); // 遅延を増やして表示
+        nowChar++;
+      });
+    });
+  </script>
+</body>
+
+</html>
